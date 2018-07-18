@@ -1,0 +1,6 @@
+,Preference Parameter,
+Coefficient of Relative Risk Averse,$\rho$,2
+SOE Discount Factor,$\beta_{SOE}$,0.97
+Probability of Updating to True States,$\Pi$,0.25
+Probability of Socially Updating,$s$,0.2
+Modified Probability of Updating,$\tilde{\Pi}$,0.294

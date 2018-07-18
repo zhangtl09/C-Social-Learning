@@ -1,0 +1,5 @@
+,Preference Parameter,
+Capital's Share of Income,$\alpha$,0.36
+Depreciation Factor,$1-\delta$,$0.94^{1/4}$
+Variance Aggregate Transitory Shocks,$\sigma_{\Theta}^2$,0.00001
+Variance Aggregate Permanent Shocks,$\sigma_{\Psi}^2$,0.00004

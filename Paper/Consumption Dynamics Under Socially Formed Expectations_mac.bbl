@@ -1,0 +1,192 @@
+\begin{thebibliography}{30}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Avery and Zemsky(1998)]{HerdUncertain}
+Christopher Avery and Peter Zemsky.
+\newblock Multidimensional uncertainty and herd behavior in financial markets.
+\newblock \emph{The American Economic Review}, 88\penalty0 (4):\penalty0
+  724--748, 1998.
+
+\bibitem[Bagwell and Bernheim(1996)]{Veblen1996}
+Laurie~S. Bagwell and B.~Douglas Bernheim.
+\newblock Veblen effects in a theory of conspicuous consumption.
+\newblock \emph{American Economic Review}, 86\penalty0 (3):\penalty0 349--373,
+  1996.
+
+\bibitem[Bailey et~al.(2016)Bailey, Cao, Kuchler, and Stroebel]{Facebook}
+Michael~C. Bailey, Ruiqing Cao, Theresa Kuchler, and Johannes Stroebel.
+\newblock Social networks and housing markets.
+\newblock Working paper 22258, NBER, 2016.
+
+\bibitem[Banerjee(1992)]{HerdOrigin}
+Abhijit~V. Banerjee.
+\newblock Multidimensional uncertainty and herd behavior in financial markets.
+\newblock \emph{The Quarterly Journal of Economics}, 107\penalty0 (3):\penalty0
+  797--817, 1992.
+
+\bibitem[Bertrand and Morse(2016)]{Trickle}
+Marianne Bertrand and Adair Morse.
+\newblock Trickle-down consumption.
+\newblock \emph{Review of Economics and Statistics}, 98\penalty0 (5):\penalty0
+  863--879, 2016.
+
+\bibitem[Bhandari et~al.(2017)Bhandari, Borovicka, and Ho]{SurveyData}
+Anmol Bhandari, Jaroslav Borovicka, and Paul Ho.
+\newblock Survey data and subjective beliefs in business cycle models.
+\newblock Working paper 22225, NBER, 2017.
+
+\bibitem[Blanchard(1985)]{blanchardFinite}
+Olivier~J. Blanchard.
+\newblock Debt, deficits, and finite horizons.
+\newblock \emph{Journal of Political Economy}, 93\penalty0 (2):\penalty0
+  223--247, 1985.
+
+\bibitem[Boldrin et~al.(2001)Boldrin, Christiano, J., and Fisher]{ShockStd2}
+Michele Boldrin, Christiano, Lawrence J., and Jonas~D. Fisher.
+\newblock Habit persistence, asset returns and the business cycle.
+\newblock \emph{American Economic Review}, 91\penalty0 (1):\penalty0 149--66,
+  2001.
+
+\bibitem[Calvo-Armengol and Jackson(2004)]{VacancyNet}
+Antoni Calvo-Armengol and Matthew~O. Jackson.
+\newblock The effects of social networks on employment and inequality.
+\newblock \emph{American Economic Review}, 94\penalty0 (3):\penalty0 426--454,
+  2004.
+
+\bibitem[Carroll(2003)]{Carroll2003}
+Christopher~D. Carroll.
+\newblock Macroeconomic expectations of households and professional
+  forecasters.
+\newblock \emph{Quarterly Journal of Economics}, 118\penalty0 (1):\penalty0
+  269--298, 2003.
+
+\bibitem[Carroll(2016)]{BufferTheory}
+Christopher~D. Carroll.
+\newblock Theoretical foundations of buffer stock saving.
+\newblock manuscript, Department of Economics, Johns Hopkins University, 2016.
+\newblock URL
+  \url{http://econ.jhu.edu/people/ccarroll/papers/BufferStockTheory}.
+
+\bibitem[Carroll and Andrew(1997)]{MicroShockStd1}
+Christopher~D. Carroll and Samwick Andrew.
+\newblock The nature of precautionary wealth.
+\newblock \emph{Journal of Monetary Economics}, 40\penalty0 (1):\penalty0
+  41--71, 1997.
+
+\bibitem[Carroll et~al.(2018)Carroll, Crawley, Slacalek, Tokuoka, and
+  White]{StickyE}
+Christopher~D. Carroll, Edmund Crawley, Jiri Slacalek, Kiichi Tokuoka, and
+  Matthew White.
+\newblock Sticky expectations and consumption dynamics.
+\newblock Working paper 24377, NBER, 2018.
+
+\bibitem[Chen et~al.(2014)Chen, Chang, and Wen]{Stability}
+Shu-Heng Chen, Chia-Ling Chang, and Ming-Chang Wen.
+\newblock Social networks and macroeconomic stability.
+\newblock \emph{Economics The Open-Access, Open-Assessment E-Journal},
+  8:\penalty0 1--40, 2014.
+
+\bibitem[De~Giorgi et~al.(2016)De~Giorgi, Frederiksen, and
+  Pistaferri]{PeerEvidence}
+Giacomo De~Giorgi, Anders Frederiksen, and Luigi Pistaferri.
+\newblock Consumption network effects.
+\newblock Working paper 22357, NBER, 2016.
+
+\bibitem[Delli~Gatti et~al.(2010)Delli~Gatti, Gallegati, Greenwald, Russo, and
+  Stiglitz]{EndogNet}
+Domenico Delli~Gatti, Mauro Gallegati, Bruce Greenwald, Alberto Russo, and
+  Joseph~E. Stiglitz.
+\newblock The financial accelerator in an evolving credit network.
+\newblock \emph{Journal of Economic Dynamics and Control}, 34\penalty0
+  (9):\penalty0 1627--1650, 2010.
+
+\bibitem[Gali(1994)]{GaliKeep}
+Jordi Gali.
+\newblock Keeping up with the joneses: Consumption externalities, portfolio
+  choice, and asset prices.
+\newblock \emph{Journal of Money, Credit and Banking}, 26\penalty0
+  (1):\penalty0 1--8, 1994.
+
+\bibitem[Granovetter(1973)]{Granovetter1973}
+Mark~S. Granovetter.
+\newblock The strength of weak ties.
+\newblock \emph{The American Journal of Sociology}, 78\penalty0 (6):\penalty0
+  1360--1380, 1973.
+
+\bibitem[Hall(1978)]{Hall1978}
+Robert~E. Hall.
+\newblock Stochastic implications of the life cycle-permanent income
+  hypothesis: Theory and evidence.
+\newblock \emph{Journal of Political Economy}, 86\penalty0 (6):\penalty0
+  971--987, 1978.
+
+\bibitem[Havranek et~al.(2017)Havranek, Rusnak, and Sokolova]{EvidenceSlugg}
+Tomas Havranek, Marek Rusnak, and Anna Sokolova.
+\newblock Habit formation in consumption: A meta-analysis.
+\newblock \emph{European Economic Review}, 95\penalty0 (1):\penalty0 142--167,
+  2017.
+
+\bibitem[Jackson and Rogers(2007)]{MicroStructure}
+Matthew~O. Jackson and Brian~W. Rogers.
+\newblock Relating network structure to diffusion properties through stochastic
+  dominance.
+\newblock \emph{The B.E. Journal of Theoretical Economics}, 7\penalty0
+  (1):\penalty0 1935--1704, 2007.
+
+\bibitem[Jackson et~al.(2017)Jackson, Rogers, and Zenou]{MicroSurvey}
+Matthew~O. Jackson, Brian~W. Rogers, and Yves Zenou.
+\newblock The economic consequences of social network structure.
+\newblock \emph{Journal of Economic Literature}, 55\penalty0 (1):\penalty0
+  49--95, 2017.
+
+\bibitem[Jermann(1998)]{ShockStd3}
+Urban~J. Jermann.
+\newblock Asset pricing in production economies.
+\newblock \emph{Journal of Monetary Economics}, 42\penalty0 (2):\penalty0
+  257--75, 1998.
+
+\bibitem[Kumhof et~al.(2013)Kumhof, Ranciere, and Winant]{IMFReport}
+Michael Kumhof, Romain Ranciere, and Pablo Winant.
+\newblock Inequality, leverage and crises: The case of endogenous default.
+\newblock Working paper WP-13-249, IMF, 2013.
+
+\bibitem[Nielsen and Vissing-Jorgensen(2006)]{MicroShockStd4}
+Helena~Skyt Nielsen and Annette Vissing-Jorgensen.
+\newblock The impact of labor income risk on educational choices: Estimates and
+  implied risk aversion.
+\newblock manuscript, 2006.
+
+\bibitem[Pangallo et~al.(2016)Pangallo, Nadal, and Vignes]{ResidentialEvidence}
+Marco Pangallo, Jean~Pierre Nadal, and Annick Vignes.
+\newblock Residential income segregation: a behavioral model of the housing
+  market.
+\newblock [q-fin.EC] 1606.00424v2, arXiv, 2016.
+
+\bibitem[R. et~al.(2005)R., Kehoe, and Chari]{ShockStd1}
+McGrattan~Ellen R., Patrick Kehoe, and V.~V. Chari.
+\newblock A critique of structural vars using real business cycle theory.
+\newblock Working paper 631, Federal Reserve of Minneapolis, 2005.
+
+\bibitem[Rajan(2010)]{FaultLines}
+Raghuram Rajan.
+\newblock \emph{Fault Lines: How Hidden Fractures Still Threaten the World
+  Economy}.
+\newblock Princeton University Press, 2010.
+
+\bibitem[Roberts(1997)]{InflationEvid}
+John~M. Roberts.
+\newblock Is inflation sticky?
+\newblock \emph{Journal of Monetary Economics}, 39\penalty0 (2):\penalty0
+  173--196, 1997.
+
+\bibitem[Wang and Wang(2017)]{ConsumptionManage}
+Ruxian Wang and Zizhuo Wang.
+\newblock Consumer choice models with endogenous network effects.
+\newblock \emph{Management Science}, 63\penalty0 (11):\penalty0 3944--3960,
+  2017.
+
+\end{thebibliography}
