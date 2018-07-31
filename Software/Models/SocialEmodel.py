@@ -23,6 +23,9 @@ Calibrated parameters for each type are found in StickyEparams.
 #sys.path.insert(0, os.path.abspath('../ConsumptionSaving'))
 
 import numpy as np
+from sympy import *
+import random
+from natsort import natsorted
 from ConsAggShockModel import AggShockConsumerType, AggShockMarkovConsumerType, CobbDouglasEconomy, CobbDouglasMarkovEconomy
 from RepAgentModel import RepAgentConsumerType, RepAgentMarkovConsumerType
 
@@ -49,11 +52,9 @@ class StickyEconsumerType(AggShockConsumerType):
         AggShockConsumerType.simBirth(self,which_agents)
         if hasattr(self,'pLvlErrNow'):
             self.pLvlErrNow[which_agents] = 1.0
-            self.pSocial[which_agents] = 1.0
             self.pInd[which_agents] = 1.0
         else:
             self.pLvlErrNow = np.ones(self.AgentCount)
-            self.pSocial = np.ones(self.AgentCount)
             self.pInd = np.ones(self.AgentCount)
 
             
@@ -87,8 +88,10 @@ class StickyEconsumerType(AggShockConsumerType):
         
         self.social_act=social&self.dont
         self.neither=nsocial&self.dont
-        #social_index=np.where(self.social_act==True)[0]
-        #how_many_act_social=len(social_index)
+        
+        #social_index attribute is the array of indices of all agents who socially update in this period
+        self.social_index=np.where(self.social_act==True)[0]
+        self.how_many_act_social=len(self.social_index)
         
     def getpLvlError(self):
         '''
@@ -109,7 +112,6 @@ class StickyEconsumerType(AggShockConsumerType):
         '''
         pLvlErr = np.ones(self.AgentCount)
         pLvlErr[self.neither] = self.PermShkAggNow/self.PermGroFacAgg
-        pLvlErr[self.social_act] = (self.pLvlNow[self.social_act]*self.PermShkAggNow)/(self.PermGroFacAgg*self.pSocial[self.social_act]*self.pInd[self.social_act])
         return pLvlErr
         
             
@@ -136,25 +138,80 @@ class StickyEconsumerType(AggShockConsumerType):
         newborns = self.t_age == 0
         self.TranShkNow[newborns] = self.TranShkAggNow*self.wRteNow # Turn off idiosyncratic shocks for newborns       
         self.PermShkNow[newborns] = self.PermShkAggNow
-        self.getUpdaters() # Randomly draw which agents will update their beliefs 
+        self.getUpdaters() # Randomly draw which agents will update their beliefs     
+        
         self.IdioPermShk=self.PermShkNow/float(self.PermShkAggNow)
-        self.TrueShock=self.PermShkNow
-        #self.Pcvd_lag=self.PlvlAggNow/self.pLvlErrNow
+        
         # Calculate innovation to the productivity level perception error
         pLvlErrNew = self.getpLvlError()
         self.pLvlErrNow *= pLvlErrNew # Perception error accumulation
         
-        #Calculate New true states
-        #TruePermShk=(self.PermShkNow)*self.pLvlErrNow        
-        #Socially update
-        #New error equal true states divides new belief
+        ######################################################
+        #Assign agents with overlap neighborhood into one group based on their distance between each other        
+        if (self.how_many_act_social>=1):
+            Agent_dis=self.social_index[1:]-self.social_index[0:self.how_many_act_social-1]
+            Group=[]
+            #First_group is the group that includes the first socially update agent in the row
+            First_group=[self.social_index[0]]
+            #Start_from is the index of first socially update agent after all agents in First_group
+            Start_from=1
+            #Find the overlap group that contains the first socially update agent
+            for i in range(self.how_many_act_social-1):
+                if (Agent_dis[i]<=self.NetSiz):
+                    First_group.append(self.social_index[i+1])
+                    Start_from=i+2
+                else:
+                    break
+            #End_group is the group that includes the last socially update agent in the row
+            GroupSiz=0 #measures the total number of agents in the first group and the end group
+            if (Start_from<=(self.how_many_act_social-1)):
+                Combine_group=[]
+                End_group=[self.social_index[self.how_many_act_social-1]]
+                End_at=self.how_many_act_social-1-1
+                for i in range(self.how_many_act_social-2,Start_from-1,-1):
+                    if (Agent_dis[i]<=self.NetSiz):
+                        End_group.insert(0, self.social_index[i])
+                        End_at=i-1
+                    else:
+                        break
+                if((self.social_index[0]+self.AgentCount-self.social_index[self.how_many_act_social-1])<=self.NetSiz):
+                    Combine_group=np.array(End_group+First_group)
+                    Group.append(Combine_group)
+                    GroupSiz=len(Combine_group)
+                else:
+                    Group.append(np.array(First_group))
+                    Group.append(np.array(End_group))
+                    GroupSiz=len(First_group)+len(End_group)
+
+            else:   
+                Group.append(np.array(First_group))
+                GroupSiz=len(First_group)
+            #Assign all other socially update agents into group
+            Start=Start_from
+            End=End_at
+            Insert_at=1
+            if(GroupSiz<=self.how_many_act_social):
+                while(Start<=End):
+                    MovGroup=[self.social_index[Start]]
+                    i=Start
+                    while (i<=End):
+                        if (Agent_dis[i]<=self.NetSiz):
+                            MovGroup.append(self.social_index[i+1])
+                            i=i+1
+                        else:
+                            Start=i+1
+                            Group.insert(Insert_at,np.array(MovGroup))
+                            Insert_at=Insert_at+1
+                            MovGroup=[]
+                            break
+            self.group=Group
+        ###############################################################
         
-        # Calculate (mis)perceptions of the permanent shock
+        # Calculate (mis)perceptions of the permanent shock for news updaters and non-updaters
         PermShkPcvd = self.PermShkNow/pLvlErrNew
         PermShkPcvd[self.update] *= self.pLvlErrNow[self.update] # Updaters see the true permanent shock and all missed news        
         self.pLvlErrNow[self.update] = 1.0
-        self.PermShkNow = PermShkPcvd
-        
+        self.PermShkNow = PermShkPcvd       
         
     def getStates(self):
         '''
@@ -170,40 +227,124 @@ class StickyEconsumerType(AggShockConsumerType):
         -------
         None
         '''
-        # Update consumers' perception of their permanent income level
+        ##################################
+        #Calculate perceived productivity for agents that update to the news and agents that don't update at all.        
         pLvlPrev = self.pLvlNow
-        self.prev=pLvlPrev 
-        self.pLvlNow = pLvlPrev*self.PermShkNow # Perceived permanent income level (only correct if macro state is observed this period)
-        self.PlvlAggNow *= self.PermShkAggNow # Updated aggregate permanent productivity level
-        self.pLvlTrue = self.pLvlNow*self.pLvlErrNow
+        self.prev=pLvlPrev
+        self.pLvlNow = pLvlPrev*self.PermShkNow
+        self.PlvlAggNow *= self.PermShkAggNow
         self.pInd *= self.IdioPermShk
-        plvlNow=self.pLvlNow
-        self.Pcvd_lag=plvlNow/self.pInd
-        ###############################################
-        pAve=np.ones(self.AgentCount)
-        #Test=np.ones(self.AgentCount)
-        #PG=np.ones(self.AgentCount)
-        for SocialCounter in range(self.AgentCount):
-            #GrowthRate=self.PermGroFacAgg[self.MrkvNowPcvd[SocialCounter]]
-            SocialPos=SocialCounter
-            self.correction=self.Pcvd_lag[SocialPos]-plvlNow[SocialPos]
-            #self.correction=-plvlNow[SocialPos]
-            ##################            
-            #Test[SocialPos]=self.Pcvd_lag[SocialPos]-plvlNow[SocialPos]
-            ############3
-            Left_sum=sum(plvlNow[(SocialPos-self.NetSiz):(SocialPos)])
-            Right_sum=sum(plvlNow[(SocialPos):(SocialPos+self.NetSiz+1)])
-            if ((SocialPos-self.NetSiz)<0):
-                Left_sum=sum(plvlNow[0:(SocialPos)])+sum(plvlNow[(self.AgentCount+SocialPos-self.NetSiz):])
-            if ((SocialPos+self.NetSiz+1)>self.AgentCount):
-                Right_sum=sum(plvlNow[SocialPos:])+sum(plvlNow[0:(SocialPos+self.NetSiz+1-self.AgentCount)])
-      #      Left_sum=Left_sum+correction            
-#            pAve[SocialCounter]=(Left_sum+Right_sum+self.correction)/(2*self.NetSiz+1)
-            pAve[SocialCounter]=(Left_sum+Right_sum+self.correction)/float(2*self.NetSiz+1)
-            #pAve[SocialCounter]=self.PermGroFacAgg[SocialCounter]*(Left_sum+Right_sum)/(2*self.NetSiz+1)        
-        self.pSocial=pAve
-        #self.test=Test
-        ##################################################        
+        self.pLvlTrue=self.pLvlNow*self.pLvlErrNow
+        self.Pcvd=self.pLvlNow/self.pInd
+        
+        #Initialize an attribute called PSocial to store the perceived aggregate productivities of socially updating agents
+        self.PSocial=self.Pcvd
+        Group=self.group
+        #Only compute the PSocial when the number of socially updating agents are greater than 1
+        if (self.how_many_act_social>=1):
+            #Here the socially updating household update perceptions of both the level and the growth rate of aggregate productivity
+            #For each group, in the case when the socially updating households are each other's neighbors, their perceptions have to be solved simultaneously in a linear equation system
+            Num_groups=len(Group)
+            for i in range(Num_groups):
+                Num_agent_in_group=len(Group[i])
+                Growth_set=[]
+                
+                #When there is only one agent in the group, there is no circulating updating
+                if (Num_agent_in_group<=1):
+                    Social_pos=Group[i][0]
+                    Left_sum_char=sum(self.pLvlNow[(Social_pos-self.NetSiz):(Social_pos)])
+                    Left_growth=list(self.MrkvNowPcvd[(Social_pos-self.NetSiz):(Social_pos)])
+                    if ((Social_pos-self.NetSiz)<0):
+                        Left_sum_char=sum(self.pLvlNow[(Social_pos+self.AgentCount-self.NetSiz):])+sum(self.pLvlNow[0:(Social_pos)])
+                        Left_growth=list(self.MrkvNowPcvd[(Social_pos+self.AgentCount-self.NetSiz):])+list(self.MrkvNowPcvd[0:(Social_pos)])
+                        
+                    if (Social_pos+self.NetSiz<=(self.AgentCount-1)):
+                        Right_sum_char=sum(self.pLvlNow[(Social_pos+1):(Social_pos+self.NetSiz+1)])
+                        Right_growth=list(self.MrkvNowPcvd[(Social_pos+1):(Social_pos+self.NetSiz+1)])
+                        
+                    if (Social_pos+self.NetSiz>(self.AgentCount-1)):
+                        if ((Social_pos+1)>(self.AgentCount-1)):
+                            Right_sum_char=sum(self.pLvlNow[0:self.NetSiz])
+                            Right_growth=list(self.MrkvNowPcvd[0:self.NetSiz])
+                        else:
+                            Right_sum_char=sum(self.pLvlNow[(Social_pos+1):])+sum(self.pLvlNow[0:(Social_pos+self.NetSiz+1-self.AgentCount)])
+                            Right_growth=list(self.MrkvNowPcvd[(Social_pos+1):])+list(self.MrkvNowPcvd[0:(Social_pos+self.NetSiz+1-self.AgentCount)])
+                            
+                    self.PSocial[Social_pos]=(Left_sum_char+Right_sum_char)/float(2*self.NetSiz)
+                    Growth_set=Left_growth+Right_growth
+                    self.MrkvNowPcvd[Social_pos]=random.choice(Growth_set)
+            
+                else:
+                    #Solve perceptions of aggregate productivity and growt rate if the group has multiple agents
+                    Name_set=[]
+                    Pro_Value_set=[]
+                    Gro_Value_set=[]
+                    Prob_set=[]
+                    #Social_sym are symbols which denotes growth rate perceptions of socially updating households
+                    Social_sym=symbols('a0:%d'%Num_agent_in_group)
+                    
+                    #Population_sym are symbols represent every agents in the population
+                    Population_sym=symbols('M0:%d'%self.AgentCount)
+
+                    Variable_dummy=list(Population_sym)
+
+                    Equations=[]
+                    Solution=[]
+
+                    Social_sym_p=symbols('p0:%d'%Num_agent_in_group)
+                    Variable_dummy_p=list(self.Pcvd)
+                    Equations_p=[]
+                    Solution_p=[]
+
+                    for index_of_index in range(Num_agent_in_group):
+                        Variable_dummy[Group[i][index_of_index]]=Social_sym[index_of_index]
+                        Variable_dummy_p[Group[i][index_of_index]]=Social_sym_p[index_of_index]
+                    
+                    Variable_dummy_p=Variable_dummy_p*self.pInd
+                    
+                    for index_of_index in range(Num_agent_in_group):
+                        Social_pos=Group[i][index_of_index]
+                        Left_sum=sum([Variable_dummyi for Variable_dummyi in Variable_dummy[(Social_pos-self.NetSiz):(Social_pos)]])
+                        Left_sum_p=sum([Variable_dummy_pi for Variable_dummy_pi in Variable_dummy_p[(Social_pos-self.NetSiz):(Social_pos)]])
+                        if ((Social_pos-self.NetSiz)<0):
+                            Left_sum=sum([Variable_dummyi for Variable_dummyi in Variable_dummy[(Social_pos+self.AgentCount-self.NetSiz):]])+sum([Variable_dummyi for Variable_dummyi in Variable_dummy[0:Social_pos]])
+                            Left_sum_p=sum([Variable_dummy_pi for Variable_dummy_pi in Variable_dummy_p[(Social_pos+self.AgentCount-self.NetSiz):]])+sum([Variable_dummy_pi for Variable_dummy_pi in Variable_dummy_p[0:Social_pos]])
+                        if (Social_pos+self.NetSiz<=(self.AgentCount-1)):
+                            Right_sum=sum([Variable_dummyi for Variable_dummyi in Variable_dummy[(Social_pos+1):(Social_pos+1+self.NetSiz)]])
+                            Right_sum_p=sum([Variable_dummy_pi for Variable_dummy_pi in Variable_dummy_p[(Social_pos+1):(Social_pos+1+self.NetSiz)]])
+                        if (Social_pos+self.NetSiz>(self.AgentCount-1)):
+                            if ((Social_pos+1)>(self.AgentCount-1)):
+                                Right_sum=sum([Variable_dummyi for Variable_dummyi in Variable_dummy[0:self.NetSiz]])
+                                Right_sum_p=sum([Variable_dummy_pi for Variable_dummy_pi in Variable_dummy_p[0:self.NetSiz]])
+                            else:
+                                Right_sum=sum([Variable_dummyi for Variable_dummyi in Variable_dummy[(Social_pos+1):]])+sum([Variable_dummyi for Variable_dummyi in Variable_dummy[0:(Social_pos+self.NetSiz+1-self.AgentCount)]])
+                                Right_sum_p=sum([Variable_dummy_pi for Variable_dummy_pi in Variable_dummy_p[(Social_pos+1):]])+sum([Variable_dummy_pi for Variable_dummy_pi in Variable_dummy_p[0:(Social_pos+self.NetSiz+1-self.AgentCount)]])
+                        s=(Left_sum+Right_sum)/float(2*self.NetSiz)-Variable_dummy[Social_pos]
+                        s_p=(Left_sum_p+Right_sum_p)/float(2*self.NetSiz)-Social_sym_p[index_of_index]
+                        Equations.append(s)
+                        Equations_p.append(s_p)
+                    
+                    #Solution variable is the symbolic solution for growth rate perceptions
+                    #Solution_p variable is the solution for aggregate productivity perceptions
+                    Solution=solve(Equations,Social_sym,simplify=False,rational=False)
+                    Solution_p=solve(Equations_p,Social_sym_p,simplify=False,rational=False)
+                    
+                    for index_of_index in range(Num_agent_in_group):
+                        Social_pos=Group[i][index_of_index]
+                        Name_set=natsorted([str(Name) for Name in list(Solution[Social_sym[index_of_index]].free_symbols)])
+                        Gro_Value_set=[self.MrkvNowPcvd[int(Name[1:])] for Name in Name_set]
+                        Prob_set=Poly(Solution[Social_sym[index_of_index]]).coeffs()
+                        self.MrkvNowPcvd[Social_pos]=np.random.choice(Gro_Value_set,1,p=Prob_set)
+                        self.PSocial[Social_pos]=Solution_p[Social_sym_p[index_of_index]]
+                      
+            self.Pcvd[self.social_act]=self.PSocial[self.social_act]
+            self.pLvlNow[self.social_act]=self.Pcvd[self.social_act]*self.pInd[self.social_act]         
+            pLvlErr = np.ones(self.AgentCount)            
+            pLvlErr[self.social_act] = (self.pLvlNow[self.social_act]*self.PermShkAggNow)/(self.PermGroFacAgg[self.MrkvNowPcvd[self.social_act]]*self.PSocial[[self.social_act]]*self.pInd[[self.social_act]])
+            self.pLvlErrNow[self.social_act] *= pLvlErr[self.social_act]
+            self.pLvlTrue[self.social_act]=self.pLvlNow[self.social_act]*self.pLvlErrNow[self.social_act]
+ 
+        
         # Calculate what the consumers perceive their normalized market resources to be
         RfreeNow = self.getRfree()
         bLvlNow = RfreeNow*self.aLvlNow # This is the true level
@@ -322,9 +463,7 @@ class StickyEmarkovConsumerType(AggShockMarkovConsumerType,StickyEconsumerType):
             Array of size AgentCount with this period's (new) misperception.
         '''
         pLvlErr = np.ones(self.AgentCount)
-        #pLvlErr[self.dont] = self.PermShkAggNow/self.PermGroFacAgg[self.MrkvNowPcvd[self.dont]]
-        pLvlErr[self.neither] = self.PermShkAggNow/self.PermGroFacAgg[self.MrkvNowPcvd[self.neither]]
-        pLvlErr[self.social_act] = (self.pLvlNow[self.social_act]*self.PermShkAggNow)/(self.PermGroFacAgg[self.MrkvNowPcvd[self.social_act]]*self.pSocial[[self.social_act]]*self.pInd[[self.social_act]])        
+        pLvlErr[self.neither] = self.PermShkAggNow/self.PermGroFacAgg[self.MrkvNowPcvd[self.neither]]      
         return pLvlErr
     
 

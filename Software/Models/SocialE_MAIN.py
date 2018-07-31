@@ -16,13 +16,13 @@ import csv
 from time import clock
 from copy import deepcopy
 import subprocess
-from SocialEmodel_current_IndividualP_no_pre_growth import StickyEmarkovConsumerType, StickyEmarkovRepAgent, StickyCobbDouglasMarkovEconomy
+from SocialEmodel import StickyEmarkovConsumerType, StickyEmarkovRepAgent, StickyCobbDouglasMarkovEconomy
 from ConsAggShockModel import SmallOpenMarkovEconomy
 from HARKutilities import plotFuncs
 import matplotlib.pyplot as plt
 import scipy as sp
 import SocialEparams as Params
-from StickyEtools import makeStickyEdataFile, runStickyEregressions, makeResultsTable,\
+from SocialEtools import makeStickyEdataFile, runStickyEregressions, makeResultsTable,\
                   runStickyEregressionsInStata, makeParameterTable, makeEquilibriumTable,\
                   makeMicroRegressionTable, extractSampleMicroData, makeuCostVsPiFig, \
                   makeValueVsAggShkVarFig, makeValueVsPiFig
@@ -62,7 +62,7 @@ else:
     runRegressions = lambda a,b,c,d,e : runStickyEregressions(a,b,c,d,e)
 
 #Chosse the folder to save the output graphs
-Folder_path='..\Result'
+Folder_path='.\Results\PaperData'
 
 Min_siz=1
 Max_siz=11
@@ -74,7 +74,6 @@ if __name__ == '__main__':
     ###############################################################################
     c_std=[]
     C_std=[]
-    #print('Size of the social network is:',NetSiz)
     Params.init_SOE_mrkv_consumer['NetSiz']=1
     StickySOEmarkovBaseType = StickyEmarkovConsumerType(**Params.init_SOE_mrkv_consumer)
     StickySOEmarkovBaseType.IncomeDstn[0] = Params.StateCount*[StickySOEmarkovBaseType.IncomeDstn[0]]
@@ -112,49 +111,54 @@ if __name__ == '__main__':
         # Simulate the sticky small open Markov economy
         t_start = clock()
         for agent in StickySOmarkovEconomy.agents:
-            agent(UpdatePrb = 1.0)
-            agent(SocialPrb = 0.0)
+            agent(UpdatePrb = Params.UpdatePrb)
+            agent(SocialPrb = Params.SocialPrb)
             agent(NetSiz = NetSiz)
         StickySOmarkovEconomy.makeHistory()
         t_end = clock()
         print('Simulating the sticky small open Markov economy took ' + mystr(t_end-t_start) + ' seconds.')
         # Make results for the sticky small open Markov economy
         desc = 'Results for the sticky small open Markov economy with update probability ' + mystr(Params.UpdatePrb)
-        name = 'SocialEFrictionP'+str(Min_siz)+'_'+str(Max_siz)
+        name = 'SocialE_WithSiz_'+str(NetSiz)
         makeStickyEdataFile(StickySOmarkovEconomy,ignore_periods,description=desc,filename=name,save_data=save_data,calc_micro_stats=calc_micro_stats)
         if calc_micro_stats:
             micro_stat_periods = int((StickySOmarkovEconomy.agents[0].T_sim-ignore_periods)*0.1)
             sticky_SOEmarkov_micro_data = extractSampleMicroData(StickySOmarkovEconomy, np.minimum(StickySOmarkovEconomy.act_T-ignore_periods-1,periods_to_sim_micro), np.minimum(StickySOmarkovEconomy.agents[0].AgentCount,AgentCount_micro), ignore_periods)
             not_newborns = (np.concatenate([this_type.t_age_hist[(ignore_periods+1):(ignore_periods+micro_stat_periods),:] for this_type in StickySOmarkovEconomy.agents],axis=1) > 1).flatten()
         DeltaLogC_stdev = np.genfromtxt(results_dir + name+'Results.csv', delimiter=',')[3]    
-        Deltalogc_stdev=np.nanstd(sticky_SOEmarkov_micro_data[not_newborns,0])
+        Deltalogc_stdev=np.genfromtxt(results_dir + name+'Results.csv', delimiter=',')[11]
         C_std.append(DeltaLogC_stdev)
         c_std.append(Deltalogc_stdev)
 
 #############################################################
+#The forllowing numebrs are standard deviations of aggregate consumption and individual consumption from the frictionless model, the original StickyE model,and the equivalent StickyE model
+#The result from the frictionless model can be obtained by setting Params.UpdatePrb=1.0, Params.SocialPrb=0.0
+#The result from the original StickyE model can be obtained by setting Params.SocialPrb=0.0 while keep Params.UpdatePrb unchanged
+#The result from the equivalent StickyE model can be obtained by setting Params.SocialPrb=0.294 (which is ~pi~) while keep Params.UpdatePrb unchanged
     DeltaLogC_stdev_frictionless=0.010551994946000001
-    DeltaLogc_stdev_frictionless=0.060693527772294961
+    DeltaLogc_stdev_frictionless=0.0977443702736
     DeltaLogC_stdev_sticky=0.00681149331603
-    Deltalogc_stdev_sticky=0.061464262113268463
+    Deltalogc_stdev_sticky=0.0976642990455
+    DeltaLogC_stdev_equiv=0.0070672894657447492
+    Deltalogc_stdev_equiv=0.0976269153799
     Var_C_frictionless=DeltaLogC_stdev_frictionless**2
     Var_c_frictionless=DeltaLogc_stdev_frictionless**2
     Var_C_Sticky=DeltaLogC_stdev_sticky**2
     Var_c_Sticky=Deltalogc_stdev_sticky**2
+    Var_C_equiv=DeltaLogC_stdev_equiv**2
+    Var_c_equiv=Deltalogc_stdev_equiv**2
     
     Social_siz=np.array(list(range(Min_siz,Max_siz)))
     c_std=np.array(c_std)**2
     C_std=np.array(C_std)**2
-    Name_Agg='\Standard_Aggregate_Variance_Growth'+'_Min_'+str(Min_siz)+'_Max_'+str(Max_siz)+'.csv'
-    Name_Ind='\Standard_Individual_Variance_Growth'+'_Min_'+str(Min_siz)+'_Max_'+str(Max_siz)+'.csv'
+    Name_Agg='\Aggregate_Variance'+'_Min_'+str(Min_siz)+'_Max_'+str(Max_siz)+'.csv'
+    Name_Ind='\Individual_Variance'+'_Min_'+str(Min_siz)+'_Max_'+str(Max_siz)+'.csv'
     Agg_path=Folder_path+Name_Agg
     Ind_path=Folder_path+Name_Ind
     np.savetxt(Agg_path, C_std, delimiter=",")
     np.savetxt(Ind_path, c_std, delimiter=",")
     
-    #plt.title('Change in Std of Aggregate Consumption Following Increase in the size of Social Network')
-    #plt.figure(figsize=(20,20))
-    #plt.rcParams.update({'axes.labelsize': 'medium'})
-    Result_data_path = Folder_path+'\AggCVar_Growth_NetSize_'+str(Min_siz)+'_'+str(Max_siz)+'.png'
+    Result_data_path = Folder_path+'\AggCVar_NetSize_'+str(Min_siz)+'_'+str(Max_siz)+'.png'
     plt.ylabel('Variance of Aggregate Consumption')
     plt.xlabel('Size of Social Network')    
     plt.ylim(0.0,0.0004)
@@ -167,29 +171,27 @@ if __name__ == '__main__':
     Sticky_x=np.arange(Max_siz+5)
     StickyLine, =plt.plot(Sticky_x,Sticky_C, '-',color='red')
     FrictionlessLine, =plt.plot(Sticky_x,Frictionless_C, '-',color='blue')
-    #plt.legend(handles=[StickyLine, FrictionlessLine])
-    plt.legend([StickyLine, FrictionlessLine], ['StickyE', 'Frictionless'],loc='upper right')
-    #plt.plot(Social_siz, m*Social_siz + b, '-')
+    Equiv_C=np.ones(Max_siz+5)*Var_C_equiv
+    EquivLine, =plt.plot(Sticky_x,Equiv_C, '-',color='green')
+    plt.legend([StickyLine, FrictionlessLine, EquivLine], ['StickyE', 'Frictionless','Equiv-StickyE'],loc='upper right')
     plt.savefig(Result_data_path,dpi=600)
     slope, intercept, r_value, p_value, std_err = sp.stats.linregress(Social_siz,C_std)
     print('Slope=' + str(slope) + ', intercept=' + str(intercept) + ', r_square=' + str(r_value**2) + ', p_value=' + str(p_value)+', std=' + str(std_err))
 
-    #plt.title('Change in Std of individual Consumption Following Increase in the size of Social Network')
     plt.clf()    
-    Result_data_path = Folder_path+'\IndcVar_Growth_NetSize_'+str(Min_siz)+'_'+str(Max_siz)+'.png'
+    Result_data_path = Folder_path+'\IndcVar_NetSize_'+str(Min_siz)+'_'+str(Max_siz)+'.png'
     plt.ylabel('Variance of Individual Consumption')
     plt.xlabel('Size of Social Network')    
-    #plt.ylim(0.0,0.006)
     plt.xlim(0.0,Max_siz+4)
     plt.scatter(Social_siz,c_std)
-    # Draw the linear fitted line
-    #m, b = np.polyfit(Social_siz,c_std, 1)
     Frictionless_c=np.ones(Max_siz+5)*Var_c_frictionless
     Sticky_c=np.ones(Max_siz+5)*Var_c_Sticky
     Sticky_x=np.arange(Max_siz+5)
     StickyLine, = plt.plot(Sticky_x,Sticky_c, '-',color='red')
     FrictionlessLine, = plt.plot(Sticky_x,Frictionless_c, '-',color='blue')
-    plt.legend([StickyLine, FrictionlessLine], ['StickyE', 'Frictionless'],loc='upper right')
+    Equiv_c=np.ones(Max_siz+5)*Var_c_equiv
+    EquivLine, =plt.plot(Sticky_x,Equiv_c, '-',color='green')    
+    plt.legend([StickyLine, FrictionlessLine, EquivLine], ['StickyE', 'Frictionless','Equiv-StickyE'],loc='upper right')
     plt.savefig(Result_data_path,dpi=600)
     slope, intercept, r_value, p_value, std_err = sp.stats.linregress(Social_siz,c_std)
     print('Slope=' + str(slope) + ', intercept=' + str(intercept) + ', r_square=' + str(r_value**2) + ', p_value=' + str(p_value)+', std=' + str(std_err))
